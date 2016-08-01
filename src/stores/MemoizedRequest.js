@@ -1,22 +1,19 @@
 import memoize from 'memoizee';
-import request from 'request';
 
 class MemoizedRequest {
-  constructor(url) {
+  constructor(request) {
     const CACHE_TIMEOUT = 60*60*1;
 
-    const fn = function() {
-      return request(url, function (error, response, body) {
-        if (!error && response.statusCode == 200) {
-          return body;
-        }
-      });
-    }
-    this.memoized = memoize(fn, { maxAge: CACHE_TIMEOUT, preFetch: true }); //cache for one hour and prefetch when close to cache expiry
+    const fn = (url) => request(url, (error, response, body) => body);
+
+    //cache for one hour and prefetch when close to cache expiry
+    this.memoized = memoize(fn,
+                            { maxAge: CACHE_TIMEOUT, preFetch: true }
+                           );
   }
 
-  get() {
-    return this.memoized();
+  get(url) {
+    return this.memoized(url);
   }
 }
 
